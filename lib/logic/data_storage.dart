@@ -68,9 +68,6 @@ class DataStorage {
   /// Add a point to the line
   static void addToLine(PixelPosition pos) {
     if (currentMana.value <= 1) {
-      endLine();
-      line.clear();
-      lineAllowed = false;
       return;
     }
 

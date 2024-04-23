@@ -1,5 +1,4 @@
 import 'package:a_pixel_game/logic/connector.dart';
-import 'package:a_pixel_game/logic/game/game_controller.dart';
 import 'package:a_pixel_game/logic/team_manager.dart';
 import 'package:a_pixel_game/theme/buttons.dart';
 import 'package:a_pixel_game/theme/error_container.dart';

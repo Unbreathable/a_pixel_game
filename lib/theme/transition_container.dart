@@ -6,13 +6,13 @@ import 'package:get/get.dart';
 
 class TransitionContainer extends StatefulWidget {
   final Color? color;
-  final double? width;
+  final double width;
   final BorderRadius? borderRadius;
   final Widget child;
   final String tag;
   final bool fade;
 
-  const TransitionContainer({super.key, required this.child, required this.tag, this.borderRadius, this.color, this.width, this.fade = false});
+  const TransitionContainer({super.key, required this.child, required this.tag, this.borderRadius, this.color, this.width = 350, this.fade = false});
 
   @override
   State<TransitionContainer> createState() => _AnimatedContainerState();
@@ -43,18 +43,22 @@ class _AnimatedContainerState extends State<TransitionContainer> {
           ignoring: controller.transition.value,
           child: Hero(
             tag: "login",
-            child: Container(
-              width: widget.width,
-              decoration: BoxDecoration(
-                borderRadius: widget.borderRadius,
-                color: widget.color ?? Theme.of(context).colorScheme.onBackground,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: widget.width,
               ),
-              child: Animate(
-                effects: [
-                  mainEffect,
-                ],
-                target: controller.transition.value ? 0 : 1,
-                child: widget.child,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: widget.borderRadius,
+                  color: widget.color ?? Theme.of(context).colorScheme.onBackground,
+                ),
+                child: Animate(
+                  effects: [
+                    mainEffect,
+                  ],
+                  target: controller.transition.value ? 0 : 1,
+                  child: widget.child,
+                ),
               ),
             ),
           ),

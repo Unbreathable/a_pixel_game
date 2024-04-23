@@ -7,6 +7,7 @@ import 'package:a_pixel_game/theme/textfield.dart';
 import 'package:a_pixel_game/theme/transition_container.dart';
 import 'package:a_pixel_game/vertical_spacing.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 
@@ -42,189 +43,191 @@ class _LobbyPageState extends State<LobbyPage> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TransitionContainer(
-              tag: "lobby",
-              color: Get.theme.colorScheme.onBackground,
-              borderRadius: BorderRadius.circular(sectionSpacing),
-              width: 800,
-              child: Padding(
-                padding: const EdgeInsets.all(sectionSpacing),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Obx(() {
-                      final manager = Get.find<TeamManager>();
-                      final spectators = manager.teams[TeamType.spectator]?.length ?? 0;
-                      final players = (manager.teams[TeamType.blue]?.length ?? 0) + (manager.teams[TeamType.red]?.length ?? 0);
+            Flexible(
+              child: TransitionContainer(
+                tag: "lobby",
+                color: Get.theme.colorScheme.onBackground,
+                borderRadius: BorderRadius.circular(sectionSpacing),
+                width: 800,
+                child: Padding(
+                  padding: const EdgeInsets.all(sectionSpacing),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Obx(() {
+                        final manager = Get.find<TeamManager>();
+                        final spectators = manager.teams[TeamType.spectator]?.length ?? 0;
+                        final players = (manager.teams[TeamType.blue]?.length ?? 0) + (manager.teams[TeamType.red]?.length ?? 0);
 
-                      if (GameController.currentGameState.value != GameStateType.lobby) {
-                        return Text("Waiting for server..", style: Get.theme.textTheme.headlineMedium);
-                      }
-                      final lobbyState = GameController.currentState as LobbyState;
-                      if (lobbyState.countdown.value) {
-                        return Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text("$players players, starting in ", style: Get.theme.textTheme.headlineMedium),
-                            DurationRenderer(lobbyState.countdownEnd.value, style: Get.theme.textTheme.headlineMedium),
-                            Text(".. ($spectators watching)", style: Get.theme.textTheme.headlineMedium),
-                          ],
-                        );
-                      }
+                        if (GameController.currentGameState.value != GameStateType.lobby) {
+                          return Text("Waiting for server..", style: Get.theme.textTheme.headlineMedium);
+                        }
+                        final lobbyState = GameController.currentState as LobbyState;
+                        if (lobbyState.countdown.value) {
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("$players players, starting in ", style: Get.theme.textTheme.headlineMedium),
+                              DurationRenderer(lobbyState.countdownEnd.value, style: Get.theme.textTheme.headlineMedium),
+                              Text(".. ($spectators watching)", style: Get.theme.textTheme.headlineMedium),
+                            ],
+                          );
+                        }
 
-                      if (players >= 2) {
-                        return Text("$players players, $spectators spectating..", style: Get.theme.textTheme.headlineMedium);
-                      }
+                        if (players >= 2) {
+                          return Text("$players players, $spectators spectating..", style: Get.theme.textTheme.headlineMedium);
+                        }
 
-                      return Text("$players/2 players, $spectators spectating..", style: Get.theme.textTheme.headlineMedium);
-                    }),
-                    verticalSpacing(sectionSpacing),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 400,
-                            child: Material(
-                              color: Get.theme.colorScheme.primary,
-                              borderRadius: BorderRadius.circular(sectionSpacing),
-                              child: InkWell(
-                                onTap: () => GameController.joinTeam(TeamType.blue),
+                        return Text("$players/2 players, $spectators spectating..", style: Get.theme.textTheme.headlineMedium);
+                      }),
+                      verticalSpacing(sectionSpacing),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 400,
+                              child: Material(
+                                color: Get.theme.colorScheme.primary,
                                 borderRadius: BorderRadius.circular(sectionSpacing),
-                                child: Center(
-                                  child: Obx(() {
-                                    final manager = Get.find<TeamManager>();
-                                    final team = manager.teams[TeamType.blue];
-                                    if (team == null || team.isEmpty) {
-                                      return Padding(
-                                        padding: const EdgeInsets.all(sectionSpacing * 3),
-                                        child: Text(
-                                          "Click to join the team.",
-                                          textAlign: TextAlign.center,
-                                          style: Get.theme.textTheme.headlineMedium!,
-                                        ),
-                                      );
-                                    }
-
-                                    return ListView.builder(
-                                      itemCount: team.length,
-                                      shrinkWrap: true,
-                                      itemBuilder: (context, index) {
-                                        return Center(
-                                          child: Padding(
-                                            padding: EdgeInsets.only(bottom: index != 0 ? defaultSpacing : 0),
-                                            child: Obx(
-                                              () => Text(
-                                                manager.players[team[index]]!.name.value,
-                                                style: Get.theme.textTheme.headlineMedium!.copyWith(color: Get.theme.colorScheme.onPrimary),
-                                              ),
-                                            ),
+                                child: InkWell(
+                                  onTap: () => GameController.joinTeam(TeamType.blue),
+                                  borderRadius: BorderRadius.circular(sectionSpacing),
+                                  child: Center(
+                                    child: Obx(() {
+                                      final manager = Get.find<TeamManager>();
+                                      final team = manager.teams[TeamType.blue];
+                                      if (team == null || team.isEmpty) {
+                                        return Padding(
+                                          padding: const EdgeInsets.all(sectionSpacing * 3),
+                                          child: Text(
+                                            "Click to join the team.",
+                                            textAlign: TextAlign.center,
+                                            style: Get.theme.textTheme.headlineMedium!,
                                           ),
                                         );
-                                      },
-                                    );
-                                  }),
+                                      }
+
+                                      return ListView.builder(
+                                        itemCount: team.length,
+                                        shrinkWrap: true,
+                                        itemBuilder: (context, index) {
+                                          return Center(
+                                            child: Padding(
+                                              padding: EdgeInsets.only(bottom: index != 0 ? defaultSpacing : 0),
+                                              child: Obx(
+                                                () => Text(
+                                                  manager.players[team[index]]!.name.value,
+                                                  style: Get.theme.textTheme.headlineMedium!.copyWith(color: Get.theme.colorScheme.onPrimary),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    }),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        horizontalSpacing(sectionSpacing),
-                        Expanded(
-                          child: SizedBox(
-                            height: 400,
-                            child: Material(
-                              color: Get.theme.colorScheme.errorContainer,
-                              borderRadius: BorderRadius.circular(sectionSpacing),
-                              child: InkWell(
-                                onTap: () => GameController.joinTeam(TeamType.red),
+                          horizontalSpacing(sectionSpacing),
+                          Expanded(
+                            child: SizedBox(
+                              height: 400,
+                              child: Material(
+                                color: Get.theme.colorScheme.errorContainer,
                                 borderRadius: BorderRadius.circular(sectionSpacing),
-                                child: Center(
-                                  child: Obx(() {
-                                    final manager = Get.find<TeamManager>();
-                                    final team = manager.teams[TeamType.red];
-                                    if (team == null || team.isEmpty) {
-                                      return Padding(
-                                        padding: const EdgeInsets.all(sectionSpacing * 3),
-                                        child: Text(
-                                          "Click to join the team.",
-                                          textAlign: TextAlign.center,
-                                          style: Get.theme.textTheme.headlineMedium!,
-                                        ),
-                                      );
-                                    }
-
-                                    return ListView.builder(
-                                      itemCount: team.length,
-                                      shrinkWrap: true,
-                                      itemBuilder: (context, index) {
-                                        return Center(
-                                          child: Padding(
-                                            padding: EdgeInsets.only(bottom: index != 0 ? defaultSpacing : 0),
-                                            child: Obx(
-                                              () => Text(
-                                                manager.players[team[index]]!.name.value,
-                                                style: Get.theme.textTheme.headlineMedium!.copyWith(color: Get.theme.colorScheme.error),
-                                              ),
-                                            ),
+                                child: InkWell(
+                                  onTap: () => GameController.joinTeam(TeamType.red),
+                                  borderRadius: BorderRadius.circular(sectionSpacing),
+                                  child: Center(
+                                    child: Obx(() {
+                                      final manager = Get.find<TeamManager>();
+                                      final team = manager.teams[TeamType.red];
+                                      if (team == null || team.isEmpty) {
+                                        return Padding(
+                                          padding: const EdgeInsets.all(sectionSpacing * 3),
+                                          child: Text(
+                                            "Click to join the team.",
+                                            textAlign: TextAlign.center,
+                                            style: Get.theme.textTheme.headlineMedium!,
                                           ),
                                         );
-                                      },
-                                    );
-                                  }),
+                                      }
+
+                                      return ListView.builder(
+                                        itemCount: team.length,
+                                        shrinkWrap: true,
+                                        itemBuilder: (context, index) {
+                                          return Center(
+                                            child: Padding(
+                                              padding: EdgeInsets.only(bottom: index != 0 ? defaultSpacing : 0),
+                                              child: Obx(
+                                                () => Text(
+                                                  manager.players[team[index]]!.name.value,
+                                                  style: Get.theme.textTheme.headlineMedium!.copyWith(color: Get.theme.colorScheme.error),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    }),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    verticalSpacing(sectionSpacing),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          width: 300,
-                          child: LPTextField(
-                            hintText: "Your username",
-                            controller: _nameController,
-                            onSubmit: (text) {
-                              GameController.changeUsername(text);
-                            },
-                            onEditFinished: () {
-                              GameController.changeUsername(_nameController.text);
-                            },
+                        ],
+                      ),
+                      verticalSpacing(sectionSpacing),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 300,
+                            child: LPTextField(
+                              hintText: "Your username",
+                              controller: _nameController,
+                              onSubmit: (text) {
+                                GameController.changeUsername(text);
+                              },
+                              onEditFinished: () {
+                                GameController.changeUsername(_nameController.text);
+                              },
+                            ),
                           ),
-                        ),
-                        Obx(() {
-                          final manager = Get.find<TeamManager>();
-                          final team = manager.teams[TeamType.spectator];
-                          if (team == null || team.contains(GameController.ownId)) {
-                            bool qrCode = showQrCode.value;
+                          Obx(() {
+                            final manager = Get.find<TeamManager>();
+                            final team = manager.teams[TeamType.spectator];
+                            if (team == null || team.contains(GameController.ownId)) {
+                              bool qrCode = showQrCode.value;
+                              return LPElevatedButton(
+                                onTap: () => showQrCode.value = !showQrCode.value,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(elementSpacing),
+                                  child: Center(
+                                    child: Text(qrCode ? "Hide QR Code" : "Show QR Code", style: Get.theme.textTheme.labelLarge),
+                                  ),
+                                ),
+                              );
+                            }
+
                             return LPElevatedButton(
-                              onTap: () => showQrCode.value = !showQrCode.value,
+                              onTap: () => GameController.joinTeam(TeamType.spectator),
                               child: Padding(
                                 padding: const EdgeInsets.all(elementSpacing),
                                 child: Center(
-                                  child: Text(qrCode ? "Hide QR Code" : "Show QR Code", style: Get.theme.textTheme.labelLarge),
+                                  child: Text("Leave team", style: Get.theme.textTheme.labelLarge),
                                 ),
                               ),
                             );
-                          }
-
-                          return LPElevatedButton(
-                            onTap: () => GameController.joinTeam(TeamType.spectator),
-                            child: Padding(
-                              padding: const EdgeInsets.all(elementSpacing),
-                              child: Center(
-                                child: Text("Leave team", style: Get.theme.textTheme.labelLarge),
-                              ),
-                            ),
-                          );
-                        }),
-                      ],
-                    )
-                  ],
+                          }),
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
