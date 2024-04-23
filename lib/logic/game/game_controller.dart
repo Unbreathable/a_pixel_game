@@ -36,7 +36,7 @@ class GameController {
       // Load end state
       case GameStateType.end:
         currentState = EndState.load(data);
-        Get.offAll(const EndPage(), transition: Transition.fade);
+        Get.find<TransitionController>().modelTransition(const EndPage());
         break;
     }
   }

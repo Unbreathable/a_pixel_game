@@ -61,6 +61,9 @@ class TeamManager extends GetxController {
   }
 
   void handlePlayerUsername(String id, String username) {
+    if (id == GameController.ownId) {
+      GameController.ownName.value = username;
+    }
     final player = players[id]!;
     player.name.value = username;
   }

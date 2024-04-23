@@ -174,7 +174,7 @@ class GamePainter extends CustomPainter {
     for (int x = 1; x <= xSize; x++) {
       for (int y = 1; y <= ySize; y++) {
         final pixel = DataStorage.grid[x]![y]!;
-        if (pixel.type == PixelType.air && !DataStorage.line.contains(pixel.position)) {
+        if (pixel.type == PixelType.air) {
           paint.color = (x + y) % 2 == 0 ? Get.theme.colorScheme.background : Get.theme.colorScheme.onBackground;
           if (x >= drawingAreaBlueStart && x <= drawingAreaBlueEnd && ownTeam == TeamType.blue) {
             paint.color = addBlueTint(paint.color);
@@ -185,7 +185,7 @@ class GamePainter extends CustomPainter {
           continue;
         }
 
-        paint.color = DataStorage.line.contains(pixel.position) ? Colors.white : pixel.type.getColor();
+        paint.color = pixel.type.getColor();
         canvas.drawRect(rect.shift(Offset((x - 1) * pixelSize, (y - 1) * pixelSize)), paint);
       }
     }
@@ -205,21 +205,24 @@ class GamePainter extends CustomPainter {
     // Draw goal for team blue
     var healthPercentage = state.blueHealth.toDouble() / 100.0;
     canvas.drawRect(Rect.fromLTWH(0, 0, pixelSize, size.height), blueGoalBg);
-    canvas.drawRect(Rect.fromLTWH(0, (size.height / 2) - (size.height / 2) * healthPercentage, pixelSize, size.height * healthPercentage), blueGoalHealth);
+    canvas.drawRect(
+        Rect.fromLTWH(0, (size.height / 2) - (size.height / 2) * healthPercentage, pixelSize, size.height * healthPercentage), blueGoalHealth);
 
     // Draw goal for team red
     healthPercentage = state.redHealth.toDouble() / 100.0;
     canvas.drawRect(Rect.fromLTWH(size.width - pixelSize, 0, pixelSize, size.height), redGoalBg);
-    canvas.drawRect(Rect.fromLTWH(size.width - pixelSize, (size.height / 2) - (size.height / 2) * healthPercentage, pixelSize, size.height * healthPercentage), redGoalHealth);
+    canvas.drawRect(
+        Rect.fromLTWH(size.width - pixelSize, (size.height / 2) - (size.height / 2) * healthPercentage, pixelSize, size.height * healthPercentage),
+        redGoalHealth);
   }
 
   Color addBlueTint(Color color) {
-    final newBlue = (color.blue + 15).clamp(0, 255);
+    final newBlue = (color.blue + 25).clamp(0, 255);
     return Color.fromRGBO(color.red, color.green, newBlue, 1);
   }
 
   Color addRedTint(Color color) {
-    final newRed = (color.red + 15).clamp(0, 255);
+    final newRed = (color.red + 25).clamp(0, 255);
     return Color.fromRGBO(newRed, color.green, color.blue, 1);
   }
 

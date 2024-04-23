@@ -95,8 +95,8 @@ func ConstructFrame(shouldMove bool) (Frame, int64, int64) {
 							addToDeletions(&deletions, line2, point2)
 						}
 
-						// If the pixels are on 2 different x coordinates, but are neighbors and on the same y, delete them (wouldn't be detected next tick)
-						if uint(int(point1.X)+line1.Direction) == point2.X && point1.Y == point2.Y && line1.Direction != line2.Direction {
+						// If two pixels went through each other, delete them
+						if uint(int(point1.X)-line1.Direction) == point2.X && point1.Y == point2.Y && line1.Direction != line2.Direction {
 							addToDeletions(&deletions, line1, point1)
 							addToDeletions(&deletions, line2, point2)
 						}
@@ -196,17 +196,12 @@ func addToDeletions(deletions *map[*Line][]*PixelPosition, line *Line, position 
 }
 
 // Check if a pixel can be drawn at a certain location
-func canPixelBePlaced(currentLine string, position PixelPosition) bool {
+func canPixelBePlaced(position PixelPosition) bool {
 	for _, line := range lines {
 		for _, point := range line.Points {
 
 			// If the pixels are on the same location, can't be placed
 			if point.X == position.X && point.Y == position.Y {
-				return false
-			}
-
-			// If the pixels are on 2 different x coordinates, but are neighbors and on the same y, can't be placed
-			if uint(int(point.X)+line.Direction) == position.X && point.Y == position.Y && currentLine != line.Id {
 				return false
 			}
 		}
@@ -222,7 +217,7 @@ func StartLine(player *Player, direction int, position PixelPosition) bool {
 	defer linesMutex.Unlock()
 
 	// Check if the position is valid
-	if !canPixelBePlaced(player.Id, position) {
+	if !canPixelBePlaced(position) {
 		return false
 	}
 
@@ -248,7 +243,7 @@ func AddPointToLine(player *Player, position PixelPosition) bool {
 	defer linesMutex.Unlock()
 
 	// Check if the position is valid
-	if !canPixelBePlaced(player.Id, position) {
+	if !canPixelBePlaced(position) {
 		return false
 	}
 

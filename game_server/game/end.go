@@ -5,7 +5,7 @@ import (
 )
 
 // Config
-const endCountdown = 30
+const endCountdown = 15
 
 type EndStateData struct {
 	WinnerTeam   uint  `json:"team"`  // Id of the winner team
