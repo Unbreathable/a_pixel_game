@@ -53,6 +53,9 @@ class GameController {
   }
 
   static void changeUsername(String text) {
+    if (text.trim() == "") {
+      text = "I'm stupid and tried exploits.";
+    }
     defaultConnector.sendAction(ServerAction("change", <String, dynamic>{
       "name": text,
     }));

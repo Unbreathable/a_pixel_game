@@ -3,8 +3,10 @@ import 'package:a_pixel_game/logic/game/lobby_state.dart';
 import 'package:a_pixel_game/logic/team_manager.dart';
 import 'package:a_pixel_game/theme/buttons.dart';
 import 'package:a_pixel_game/theme/duration_renderer.dart';
+import 'package:a_pixel_game/theme/list_selection.dart';
 import 'package:a_pixel_game/theme/textfield.dart';
 import 'package:a_pixel_game/theme/transition_container.dart';
+import 'package:a_pixel_game/theme/window_base.dart';
 import 'package:a_pixel_game/vertical_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -21,20 +23,6 @@ class LobbyPage extends StatefulWidget {
 }
 
 class _LobbyPageState extends State<LobbyPage> {
-  final _nameController = TextEditingController();
-
-  @override
-  void initState() {
-    _nameController.text = GameController.ownName.value;
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,7 +79,13 @@ class _LobbyPageState extends State<LobbyPage> {
                                 color: Get.theme.colorScheme.primary,
                                 borderRadius: BorderRadius.circular(sectionSpacing),
                                 child: InkWell(
-                                  onTap: () => GameController.joinTeam(TeamType.blue),
+                                  onTap: () {
+                                    if (Get.find<TeamManager>().ownTeam.value == TeamType.blue) {
+                                      GameController.joinTeam(TeamType.spectator);
+                                    } else {
+                                      GameController.joinTeam(TeamType.blue);
+                                    }
+                                  },
                                   borderRadius: BorderRadius.circular(sectionSpacing),
                                   child: Center(
                                     child: Obx(() {
@@ -139,7 +133,13 @@ class _LobbyPageState extends State<LobbyPage> {
                                 color: Get.theme.colorScheme.errorContainer,
                                 borderRadius: BorderRadius.circular(sectionSpacing),
                                 child: InkWell(
-                                  onTap: () => GameController.joinTeam(TeamType.red),
+                                  onTap: () {
+                                    if (Get.find<TeamManager>().ownTeam.value == TeamType.red) {
+                                      GameController.joinTeam(TeamType.spectator);
+                                    } else {
+                                      GameController.joinTeam(TeamType.red);
+                                    }
+                                  },
                                   borderRadius: BorderRadius.circular(sectionSpacing),
                                   child: Center(
                                     child: Obx(() {
@@ -185,17 +185,13 @@ class _LobbyPageState extends State<LobbyPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
-                            width: 300,
-                            child: LPTextField(
-                              hintText: "Your username",
-                              controller: _nameController,
-                              onSubmit: (text) {
-                                GameController.changeUsername(text);
-                              },
-                              onEditFinished: () {
-                                GameController.changeUsername(_nameController.text);
-                              },
+                          LPElevatedButton(
+                            onTap: () => Get.dialog(const SettingsWindow()),
+                            child: Padding(
+                              padding: const EdgeInsets.all(elementSpacing),
+                              child: Center(
+                                child: Text("Settings", style: Get.theme.textTheme.labelLarge),
+                              ),
                             ),
                           ),
                           Obx(() {
@@ -241,23 +237,113 @@ class _LobbyPageState extends State<LobbyPage> {
                       color: Get.theme.colorScheme.onBackground,
                       borderRadius: BorderRadius.circular(sectionSpacing),
                     ),
-                    child: SizedBox(
-                      width: 200,
-                      child: PrettyQrView.data(
-                        data: "http://${Uri.base.host}",
-                        decoration: PrettyQrDecoration(
-                          shape: PrettyQrRoundedSymbol(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text("Scan to join the game!", style: Get.theme.textTheme.labelLarge),
+                        verticalSpacing(sectionSpacing),
+                        SizedBox(
+                          width: 200,
+                          child: PrettyQrView.data(
+                            data: "http://${Uri.base.host}",
+                            decoration: PrettyQrDecoration(
+                              shape: PrettyQrRoundedSymbol(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 );
               }
               return const SizedBox();
             })
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsWindow extends StatefulWidget {
+  const SettingsWindow({super.key});
+
+  @override
+  State<SettingsWindow> createState() => _SettingsWindowState();
+}
+
+class _SettingsWindowState extends State<SettingsWindow> {
+  final _nameController = TextEditingController();
+
+  // Game mode setting
+  final selectedGameMode = 0.obs;
+  final gameModes = <SelectableItem>[
+    const SelectableItem("Vanilla", Icons.sports_score),
+    const SelectableItem("Overdrive", Icons.electric_bolt),
+    const SelectableItem("Pong (literally)", Icons.sports_soccer, experimental: true),
+    const SelectableItem("Escape", Icons.directions_run, experimental: true),
+  ];
+
+  // Mana setting
+  final selectedManaRegen = 1.obs;
+  final manaRegenMode = <SelectableItem>[
+    const SelectableItem("Slow af", Icons.fast_rewind),
+    const SelectableItem("Vanilla", Icons.play_arrow),
+    const SelectableItem("Fast", Icons.fast_forward),
+    const SelectableItem("Overdrive", Icons.electric_bolt, experimental: true),
+  ];
+
+  @override
+  void initState() {
+    _nameController.text = GameController.ownName.value;
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DialogBase(
+      maxWidth: 500,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Game settings", style: Get.theme.textTheme.headlineMedium),
+            verticalSpacing(sectionSpacing),
+            Text("Change your username", style: Get.theme.textTheme.bodyLarge),
+            verticalSpacing(defaultSpacing),
+            LPTextField(
+              hintText: "Your username",
+              controller: _nameController,
+              maxLength: 20,
+              onSubmit: (text) {
+                GameController.changeUsername(text);
+              },
+              onEditFinished: () {
+                GameController.changeUsername(_nameController.text);
+              },
+            ),
+            verticalSpacing(sectionSpacing),
+
+            // Mana flow selection
+            Text("Choose how fast mana regenerates", style: Get.theme.textTheme.bodyLarge),
+            verticalSpacing(defaultSpacing),
+            ListSelection(selected: selectedManaRegen, items: manaRegenMode),
+            verticalSpacing(sectionSpacing),
+
+            // Game mode selection
+            Text("Choose a gamemode", style: Get.theme.textTheme.bodyLarge),
+            verticalSpacing(defaultSpacing),
+            ListSelection(selected: selectedGameMode, items: gameModes),
           ],
         ),
       ),
