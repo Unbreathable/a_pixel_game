@@ -13,6 +13,7 @@ import 'package:get/get.dart';
 // Config
 const xSize = 32;
 const ySize = 16;
+const tickRate = 50;
 const frameRate = 50;
 const drawingAreaBlueStart = 2;
 const drawingAreaBlueEnd = 11;
@@ -205,15 +206,12 @@ class GamePainter extends CustomPainter {
     // Draw goal for team blue
     var healthPercentage = state.blueHealth.toDouble() / 100.0;
     canvas.drawRect(Rect.fromLTWH(0, 0, pixelSize, size.height), blueGoalBg);
-    canvas.drawRect(
-        Rect.fromLTWH(0, (size.height / 2) - (size.height / 2) * healthPercentage, pixelSize, size.height * healthPercentage), blueGoalHealth);
+    canvas.drawRect(Rect.fromLTWH(0, (size.height / 2) - (size.height / 2) * healthPercentage, pixelSize, size.height * healthPercentage), blueGoalHealth);
 
     // Draw goal for team red
     healthPercentage = state.redHealth.toDouble() / 100.0;
     canvas.drawRect(Rect.fromLTWH(size.width - pixelSize, 0, pixelSize, size.height), redGoalBg);
-    canvas.drawRect(
-        Rect.fromLTWH(size.width - pixelSize, (size.height / 2) - (size.height / 2) * healthPercentage, pixelSize, size.height * healthPercentage),
-        redGoalHealth);
+    canvas.drawRect(Rect.fromLTWH(size.width - pixelSize, (size.height / 2) - (size.height / 2) * healthPercentage, pixelSize, size.height * healthPercentage), redGoalHealth);
   }
 
   Color addBlueTint(Color color) {

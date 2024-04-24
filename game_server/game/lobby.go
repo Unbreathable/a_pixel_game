@@ -8,7 +8,7 @@ import (
 )
 
 // Config
-const lobbyCountdown = 15
+const lobbyCountdown = 1
 
 type LobbyStateData struct {
 	Countdown    bool  `json:"started"`
@@ -42,7 +42,7 @@ func lobbyTick() {
 	}()
 
 	// Check if the teams are empty
-	if len(blueTeam.Players) == 0 || len(redTeam.Players) == 0 {
+	if len(blueTeam.Players) == 0 && len(redTeam.Players) == 0 {
 
 		// Stop the countdown
 		if currentState.Countdown {
@@ -63,6 +63,17 @@ func lobbyTick() {
 	}
 
 	if time.Now().After(time.UnixMilli(currentState.CountdownEnd)) {
-		StartIngameState()
+
+		// Get the mode setting
+		modeSetting, ok := bridge.GetSetting(bridge.SettingMode)
+		if !ok {
+			panic("game speed setting not found")
+		}
+
+		// Set the minimum amount based on the mode
+		switch modeSetting {
+		case 0: // Painters
+			StartPaintersIngameState()
+		}
 	}
 }

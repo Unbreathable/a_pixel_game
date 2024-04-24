@@ -51,7 +51,7 @@ class Connector {
       channel!.stream.listen(
         (data) {
           final action = ServerAction.fromJson(data);
-          if (action.name != "game_frame") {
+          if (action.name != "game_frame" && action.name != "pong_position") {
             sendLog(action.name);
           }
 

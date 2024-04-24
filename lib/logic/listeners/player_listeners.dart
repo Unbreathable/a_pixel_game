@@ -1,6 +1,9 @@
 import 'package:a_pixel_game/logic/connector.dart';
 import 'package:a_pixel_game/logic/data_storage.dart';
 import 'package:a_pixel_game/logic/team_manager.dart';
+import 'package:a_pixel_game/pages/draw_page.dart';
+import 'package:a_pixel_game/vertical_spacing.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 void initializePlayerListeners() {

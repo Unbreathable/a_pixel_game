@@ -13,7 +13,7 @@ class DataStorage {
   static bool lineAllowed = false;
   static var line = <PixelPosition>[];
 
-  static const maxMana = 20;
+  static const double maxMana = 20;
   static final currentMana = maxMana.obs;
 
   /// Initialize the entire grid with empty pixels

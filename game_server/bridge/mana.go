@@ -6,9 +6,8 @@ import (
 
 // Config
 const maxMana = 20
-const regenPerMove = 1
 
-// Player ID -> Amount of mana
+// Player ID -> Amount of mana (float64)
 var manaMap sync.Map = sync.Map{}
 
 func ResetMana() {
@@ -16,13 +15,13 @@ func ResetMana() {
 }
 
 // Called every mana tick to add mana to players who don't have max
-func ManaTick() {
+func ManaTick(manaAmount float64) {
 	manaMap.Range(func(key, value any) bool {
 		player, ok := GetPlayer(key.(string))
 		if !ok {
 			return true
 		}
-		AddMana(player, regenPerMove)
+		AddMana(player, manaAmount)
 		return true
 	})
 }
@@ -41,14 +40,15 @@ func GetMana(player *Player) int {
 }
 
 // Add (or remove) mana from a player
-func AddMana(player *Player, toAdd int) {
+func AddMana(player *Player, toAdd float64) {
+	toAdd = toAdd * player.ManaMultiplier
 	obj, ok := manaMap.Load(player.Id)
-	currentMana := 0
+	currentMana := float64(0)
 	if !ok {
 		manaMap.Store(player.Id, maxMana)
 		currentMana = maxMana
 	} else {
-		currentMana = obj.(int)
+		currentMana = obj.(float64)
 	}
 
 	// Clamp the new amount to the max and min

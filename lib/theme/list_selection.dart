@@ -11,7 +11,7 @@ class SelectableItem {
 }
 
 class ListSelection extends StatefulWidget {
-  final RxInt selected;
+  final Rx<int> selected;
   final List<SelectableItem> items;
   final Function(SelectableItem)? callback;
 
@@ -35,7 +35,7 @@ class _ListSelectionState extends State<ListSelection> {
         );
 
         return Padding(
-          padding: const EdgeInsets.only(bottom: defaultSpacing * 0.5),
+          padding: EdgeInsets.only(top: index == 0 ? 0 : defaultSpacing * 0.5),
           child: Obx(
             () => Material(
               color: widget.selected.value == index ? Get.theme.colorScheme.primary : Get.theme.colorScheme.background,

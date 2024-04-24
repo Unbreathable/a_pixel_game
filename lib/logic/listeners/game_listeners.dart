@@ -1,6 +1,7 @@
 import 'package:a_pixel_game/logic/connector.dart';
 import 'package:a_pixel_game/logic/data_storage.dart';
 import 'package:a_pixel_game/logic/game/game_controller.dart';
+import 'package:a_pixel_game/logic/setting_manager.dart';
 
 void initializeGameListeners() {
   defaultConnector.listen("game_new", (action) {
@@ -21,5 +22,9 @@ void initializeGameListeners() {
 
   defaultConnector.listen("game_frame", (action) {
     DataStorage.newFrame(action.data["frame"]);
+  });
+
+  defaultConnector.listen("setting_update", (action) {
+    SettingManager.setValue(action.data["id"], action.data["value"]);
   });
 }

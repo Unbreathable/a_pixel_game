@@ -78,5 +78,5 @@ func StartServer() {
 
 	}))
 
-	log.Fatal(app.Listen(":54321"))
+	log.Fatal(app.Listen("localhost:54321"))
 }

@@ -39,6 +39,7 @@ dependencies:
   flutter_animate: ^4.5.0
   web_socket_channel: ^2.4.5
   pretty_qr_code: ^3.3.0
+  url_launcher: ^6.2.6
 
 dev_dependencies:
   flutter_test:

@@ -4,12 +4,16 @@ import "log"
 
 //* Action sending logic
 
-// Send an action to the player
-func (player *Player) SendAction(action Action) error {
-	player.ConnMutex.Lock()
-	defer player.ConnMutex.Unlock()
+// Send an action to the player (starts a goroutine so it doesn't block)
+func (player *Player) SendAction(action Action) {
+	go func() {
+		player.ConnMutex.Lock()
+		defer player.ConnMutex.Unlock()
 
-	return player.Connection.WriteJSON(action)
+		if err := player.Connection.WriteJSON(action); err != nil {
+			log.Println("error while sending action:", err)
+		}
+	}()
 }
 
 // Send an action to all players in the server
@@ -17,10 +21,7 @@ func SendGlobalAction(action Action) {
 	playersMap.Range(func(key, value any) bool {
 		player := value.(*Player)
 
-		err := player.SendAction(action)
-		if err != nil {
-			log.Println("error while sending action to player", player.Username, err)
-		}
+		player.SendAction(action)
 		return true
 	})
 }
@@ -127,11 +128,21 @@ func LineFinishedAction() Action {
 	}
 }
 
-func ManaUpdateAction(newAmount int) Action {
+func ManaUpdateAction(newAmount float64) Action {
 	return Action{
 		Name: "mana_update",
 		Data: map[string]interface{}{
 			"mana": newAmount,
+		},
+	}
+}
+
+func SettingValueAction(setting string, value interface{}) Action {
+	return Action{
+		Name: "setting_update",
+		Data: map[string]interface{}{
+			"id":    setting,
+			"value": value,
 		},
 	}
 }

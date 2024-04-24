@@ -1,4 +1,5 @@
 import 'package:a_pixel_game/logic/connector.dart';
+import 'package:a_pixel_game/logic/setting_manager.dart';
 import 'package:a_pixel_game/logic/team_manager.dart';
 import 'package:a_pixel_game/pages/connect_page.dart';
 import 'package:a_pixel_game/theme/theme_manager.dart';
@@ -10,6 +11,7 @@ void main() {
   Get.put(TransitionController());
   Get.put(ThemeManager());
   Get.put(TeamManager());
+  SettingManager.init();
   initializeListeners();
   runApp(const MyApp());
 }

@@ -16,12 +16,13 @@ type Team struct {
 }
 
 type Player struct {
-	Mutex      *sync.Mutex     `json:"-"`
-	ConnMutex  *sync.Mutex     `json:"-"`
-	Id         string          `json:"id"`
-	Username   string          `json:"name"`
-	Team       uint            `json:"team"`
-	Connection *websocket.Conn `json:"-"`
+	Mutex          *sync.Mutex     `json:"-"`
+	ConnMutex      *sync.Mutex     `json:"-"`
+	Id             string          `json:"id"`
+	Username       string          `json:"name"`
+	Team           uint            `json:"team"`
+	ManaMultiplier float64         `json:"-"`
+	Connection     *websocket.Conn `json:"-"`
 }
 
 // Team IDs
@@ -60,15 +61,11 @@ func NewPlayer(conn *websocket.Conn, state uint, data interface{}) *Player {
 	teamsMap.Range(func(key, value any) bool {
 		t := value.(*Team)
 
-		log.Println("initializing for team", t.Id)
-
 		t.Mutex.Lock()
 		defer t.Mutex.Unlock()
 
 		for _, p := range t.Players {
-			log.Println(p.Id)
 			if p.Id == player.Id {
-				log.Println("self")
 				continue
 			}
 			p.Mutex.Lock()
@@ -81,6 +78,17 @@ func NewPlayer(conn *websocket.Conn, state uint, data interface{}) *Player {
 			p.Mutex.Unlock()
 		}
 
+		return true
+	})
+
+	// Tell the player about all settings
+	settingsMap.Range(func(key, value any) bool {
+		setting := value.(*Setting)
+
+		setting.Mutex.Lock()
+		defer setting.Mutex.Unlock()
+
+		player.SendAction(SettingValueAction(setting.Name, setting.Value))
 		return true
 	})
 
@@ -131,6 +139,36 @@ func ResetTeams() {
 	})
 }
 
+// Get the size of a team
+func GetTeamSize(teamId uint) int {
+	team, valid := GetTeam(teamId)
+	if !valid {
+		return 0
+	}
+
+	team.Mutex.Lock()
+	defer team.Mutex.Unlock()
+
+	return len(team.Players)
+}
+
+// Set the mana multiplier of all players in a team
+func SetTeamManaMultiplier(id uint, multiplier float64) {
+	teamsMap.Range(func(key, value any) bool {
+		t := value.(*Team)
+
+		t.Mutex.Lock()
+		defer t.Mutex.Unlock()
+
+		for _, player := range t.Players {
+			player.Mutex.Lock()
+			player.ManaMultiplier = multiplier
+			player.Mutex.Unlock()
+		}
+		return true
+	})
+}
+
 // Get a team from the map
 func GetTeam(id uint) (*Team, bool) {
 	obj, ok := teamsMap.Load(id)
@@ -141,7 +179,7 @@ func GetTeam(id uint) (*Team, bool) {
 }
 
 // Add all teams to the map
-func InitTeam() {
+func initTeam() {
 	teamsMap.Store(TeamSpectator, &Team{
 		Id:      TeamSpectator,
 		Mutex:   &sync.Mutex{},

@@ -1,5 +1,6 @@
 import 'package:a_pixel_game/logic/game/game_controller.dart';
 import 'package:a_pixel_game/logic/game/lobby_state.dart';
+import 'package:a_pixel_game/logic/setting_manager.dart';
 import 'package:a_pixel_game/logic/team_manager.dart';
 import 'package:a_pixel_game/theme/buttons.dart';
 import 'package:a_pixel_game/theme/duration_renderer.dart';
@@ -8,10 +9,11 @@ import 'package:a_pixel_game/theme/textfield.dart';
 import 'package:a_pixel_game/theme/transition_container.dart';
 import 'package:a_pixel_game/theme/window_base.dart';
 import 'package:a_pixel_game/vertical_spacing.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 final showQrCode = false.obs;
 
@@ -246,6 +248,7 @@ class _LobbyPageState extends State<LobbyPage> {
                           width: 200,
                           child: PrettyQrView.data(
                             data: "http://${Uri.base.host}",
+                            errorCorrectLevel: QrErrorCorrectLevel.Q,
                             decoration: PrettyQrDecoration(
                               shape: PrettyQrRoundedSymbol(
                                 color: Colors.white,
@@ -279,21 +282,27 @@ class _SettingsWindowState extends State<SettingsWindow> {
   final _nameController = TextEditingController();
 
   // Game mode setting
-  final selectedGameMode = 0.obs;
   final gameModes = <SelectableItem>[
-    const SelectableItem("Vanilla", Icons.sports_score),
+    const SelectableItem("Painters", Icons.brush),
+    const SelectableItem("Bouncers", Icons.sports_soccer),
+    const SelectableItem("Party", Icons.celebration),
+  ];
+
+  // Game speed setting
+  final gameSpeeds = <SelectableItem>[
+    const SelectableItem("Slow af", Icons.fast_rewind),
+    const SelectableItem("Vanilla", Icons.play_arrow),
+    const SelectableItem("Fast", Icons.fast_forward),
     const SelectableItem("Overdrive", Icons.electric_bolt),
-    const SelectableItem("Pong (literally)", Icons.sports_soccer, experimental: true),
-    const SelectableItem("Escape", Icons.directions_run, experimental: true),
   ];
 
   // Mana setting
-  final selectedManaRegen = 1.obs;
   final manaRegenMode = <SelectableItem>[
     const SelectableItem("Slow af", Icons.fast_rewind),
     const SelectableItem("Vanilla", Icons.play_arrow),
     const SelectableItem("Fast", Icons.fast_forward),
-    const SelectableItem("Overdrive", Icons.electric_bolt, experimental: true),
+    const SelectableItem("Overdrive", Icons.electric_bolt),
+    const SelectableItem("Unlimited", Icons.all_inclusive),
   ];
 
   @override
@@ -334,16 +343,65 @@ class _SettingsWindowState extends State<SettingsWindow> {
             ),
             verticalSpacing(sectionSpacing),
 
-            // Mana flow selection
-            Text("Choose how fast mana regenerates", style: Get.theme.textTheme.bodyLarge),
-            verticalSpacing(defaultSpacing),
-            ListSelection(selected: selectedManaRegen, items: manaRegenMode),
-            verticalSpacing(sectionSpacing),
-
             // Game mode selection
             Text("Choose a gamemode", style: Get.theme.textTheme.bodyLarge),
             verticalSpacing(defaultSpacing),
-            ListSelection(selected: selectedGameMode, items: gameModes),
+            ListSelection(
+              selected: SettingManager.settingMap[SettingManager.gameMode]!.value as Rx<int>,
+              items: gameModes,
+              callback: (item) {
+                SettingManager.updateValue(SettingManager.gameMode, gameModes.indexOf(item));
+              },
+            ),
+            verticalSpacing(sectionSpacing),
+
+            // Game mode selection
+            Text("Choose a game speed", style: Get.theme.textTheme.bodyLarge),
+            verticalSpacing(defaultSpacing),
+            ListSelection(
+              selected: SettingManager.settingMap[SettingManager.gameSpeed]!.value as Rx<int>,
+              items: gameSpeeds,
+              callback: (item) {
+                SettingManager.updateValue(SettingManager.gameSpeed, gameSpeeds.indexOf(item));
+              },
+            ),
+            verticalSpacing(sectionSpacing),
+
+            // Mana flow selection
+            Text("Choose how fast mana regenerates", style: Get.theme.textTheme.bodyLarge),
+            verticalSpacing(defaultSpacing),
+            ListSelection(
+              selected: SettingManager.settingMap[SettingManager.manaRegenSpeed]!.value as Rx<int>,
+              items: manaRegenMode,
+              callback: (item) {
+                SettingManager.updateValue(SettingManager.manaRegenSpeed, manaRegenMode.indexOf(item));
+              },
+            ),
+            verticalSpacing(sectionSpacing),
+
+            // Advertisement for Liphium because why not yk
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'This text is an advertisement for ',
+                    style: Get.theme.textTheme.bodyMedium,
+                  ),
+                  TextSpan(
+                    text: 'Liphium',
+                    style: Get.theme.textTheme.bodyMedium!.copyWith(color: Get.theme.colorScheme.onPrimary),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        launchUrl(Uri.parse("https://liphium.app"), mode: LaunchMode.externalApplication);
+                      },
+                  ),
+                  TextSpan(
+                    text: '. Which is an app I\'m working on, so it\'s here now.',
+                    style: Get.theme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

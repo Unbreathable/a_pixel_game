@@ -9,7 +9,7 @@ import (
 )
 
 // Config
-const ticksPerSecond = 50
+const ticksPerSecond = 50.0
 
 var stateMutex = &sync.Mutex{}
 var currentState uint = 0
@@ -35,12 +35,12 @@ func NewGameState(id uint, data interface{}, runner func()) {
 
 	// Run the state runner in a goroutine every ticksPerSecond
 	go func(id uint, runner func()) {
-		lastDuration := 0 * time.Millisecond
+		lastDuration := 0 * time.Microsecond
 		for {
-			time.Sleep(time.Millisecond*(1000/ticksPerSecond) - lastDuration) // We should update this to a proper ticker, but for now this one is probably fine
+			time.Sleep(time.Millisecond*(1000.0/ticksPerSecond) - lastDuration) // We should update this to a proper ticker, but for now this one is probably fine
+			current := time.Now()
 			stateMutex.Lock()
 
-			current := time.Now()
 			if id != currentState {
 				log.Println("different state")
 				stateMutex.Unlock()
@@ -72,6 +72,13 @@ func GetCurrentState() uint {
 	defer stateMutex.Unlock()
 
 	return currentState
+}
+
+func IsIngame() bool {
+	stateMutex.Lock()
+	defer stateMutex.Unlock()
+
+	return currentState == GameStateIngame
 }
 
 func GetCurrentStateData() interface{} {

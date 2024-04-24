@@ -15,7 +15,7 @@ func main() {
 	wsserver.RegisterHandlers()
 
 	// Initialize game
-	bridge.InitTeam()
+	bridge.Init()
 	game.StartLobbyState()
 
 	wsserver.StartServer()
