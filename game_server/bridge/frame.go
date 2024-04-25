@@ -8,6 +8,12 @@ import (
 	"github.com/Unbreathable/a-pixel-game/gameserver/util"
 )
 
+// Config
+const DrawingAreaBlueStart = 2
+const DrawingAreaBlueEnd = 11
+const DrawingAreaRedStart = 22
+const DrawingAreaRedEnd = 31
+
 type pixel struct {
 	X    uint `json:"x"`
 	Y    uint `json:"y"`
@@ -35,6 +41,8 @@ type Line struct {
 	Finished  bool
 	Direction int              // -1 or 1 (left or right)
 	Points    []*PixelPosition // The entire line (not stored with relative positions cause individual parts can be destroyed)
+
+	DirectionChanged bool // Data for bouncers
 }
 
 //* Frame drawing logic
@@ -63,11 +71,18 @@ func ConstructFrame(shouldMove bool) (Frame, int64, int64) {
 
 	if shouldMove {
 
+		// Get the game mode
+		modeSetting, valid := GetSetting(SettingMode)
+		if !valid {
+			panic("mode setting not found")
+		}
+
 		// Clear all deleted pixels
 		deletedPixels = []PixelPosition{}
 
 		//* Move all the lines by 1
 		for _, line := range lines {
+			line.DirectionChanged = false
 
 			// Don't move the pixels if the line isn't finished yet
 			if !line.Finished {
@@ -109,11 +124,11 @@ func ConstructFrame(shouldMove bool) (Frame, int64, int64) {
 			for _, point := range line1.Points {
 
 				// Check if it reached the goal
-				if point.X > 32 {
+				if point.X > DrawingAreaRedEnd {
 					addToDeletions(&deletions, line1, point)
 					blueScore++
 				}
-				if point.X == 0 {
+				if point.X < DrawingAreaBlueStart {
 					addToDeletions(&deletions, line1, point)
 					redScore++
 				}
@@ -125,6 +140,23 @@ func ConstructFrame(shouldMove bool) (Frame, int64, int64) {
 			for _, point := range points {
 				line.Points = slices.DeleteFunc(line.Points, func(p *PixelPosition) bool {
 					return p.X == point.X && p.Y == point.Y
+				})
+
+				// Check if the line should change direction (for bouncers gamemode)
+				if modeSetting == 1 && !line.DirectionChanged && (point.X <= DrawingAreaBlueStart || point.X >= DrawingAreaRedEnd) {
+					if line.Direction == -1 {
+						line.Direction = 1
+					} else {
+						line.Direction = -1
+					}
+					line.DirectionChanged = true
+				}
+			}
+
+			// Delete the line if it is empty
+			if len(line.Points) == 0 {
+				lines = slices.DeleteFunc(lines, func(l *Line) bool {
+					return l.CustomId == line.CustomId
 				})
 			}
 		}
@@ -197,7 +229,7 @@ func addToDeletions(deletions *map[*Line][]*PixelPosition, line *Line, position 
 }
 
 // Check if a pixel can be drawn at a certain location
-func canPixelBePlaced(position PixelPosition) bool {
+func CanPixelBePlaced(position PixelPosition) bool {
 	for _, line := range lines {
 		for _, point := range line.Points {
 
@@ -210,6 +242,28 @@ func canPixelBePlaced(position PixelPosition) bool {
 	return true
 }
 
+// Draw a pixel as a line
+func DrawPixel(id string, direction int, position PixelPosition) error {
+	linesMutex.Lock()
+	defer linesMutex.Unlock()
+
+	if !CanPixelBePlaced(position) {
+		return errors.New("pixel can't be placed here")
+	}
+
+	// Start a new line
+	line := &Line{
+		CustomId:  util.RandomString(10),
+		Id:        id,
+		Finished:  true,
+		Direction: direction,
+		Points:    []*PixelPosition{&position},
+	}
+	lines = append(lines, line)
+
+	return nil
+}
+
 //* Line drawing
 
 // Start drawing a new line (also performs checks)
@@ -218,12 +272,12 @@ func StartLine(player *Player, direction int, position PixelPosition) error {
 	defer linesMutex.Unlock()
 
 	// Check if the position is valid
-	if !canPixelBePlaced(position) {
+	if !CanPixelBePlaced(position) {
 		return errors.New("pixel can't be placed")
 	}
 
 	// Consume the mana
-	AddMana(player, -2)
+	AddMana(player, -1)
 
 	// Start a new line
 	line := &Line{
@@ -244,7 +298,7 @@ func AddPointToLine(player *Player, position PixelPosition) error {
 	defer linesMutex.Unlock()
 
 	// Check if the position is valid
-	if !canPixelBePlaced(position) {
+	if !CanPixelBePlaced(position) {
 		return errors.New("pixel can't be placed")
 	}
 

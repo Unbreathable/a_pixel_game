@@ -9,12 +9,6 @@ import (
 	"github.com/Unbreathable/a-pixel-game/gameserver/util"
 )
 
-// Config
-const drawingAreaBlueStart = 2
-const drawingAreaBlueEnd = 11
-const drawingAreaRedStart = 22
-const drawingAreaRedEnd = 31
-
 type Context struct {
 	Player *bridge.Player
 	Data   map[string]interface{}
@@ -214,11 +208,11 @@ func validatePosition(x uint, y uint, team uint) error {
 		return errors.New("line out of bounds (y)")
 	}
 
-	if team == bridge.TeamBlue && (x < drawingAreaBlueStart || x > drawingAreaBlueEnd) {
+	if team == bridge.TeamBlue && (x < bridge.DrawingAreaBlueStart || x > bridge.DrawingAreaBlueEnd) {
 		return errors.New("line out of bounds (x, blue)")
 	}
 
-	if team == bridge.TeamRed && (x < drawingAreaRedStart || x > drawingAreaRedEnd) {
+	if team == bridge.TeamRed && (x < bridge.DrawingAreaRedStart || x > bridge.DrawingAreaRedEnd) {
 		return errors.New("line out of bounds (x, red)")
 	}
 

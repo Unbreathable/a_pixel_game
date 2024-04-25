@@ -2,6 +2,7 @@ package game
 
 import (
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/Unbreathable/a-pixel-game/gameserver/bridge"
@@ -61,7 +62,6 @@ var paintersTickCounter = 0
 var paintersTicks = 0
 
 func paintersIngameTick() {
-	log.Println("tick")
 	blueTeam, _ := bridge.GetTeam(bridge.TeamBlue)
 	redTeam, _ := bridge.GetTeam(bridge.TeamRed)
 	spectatorTeam, _ := bridge.GetTeam(bridge.TeamSpectator)
@@ -159,6 +159,17 @@ func paintersIngameTick() {
 		bridge.ManaTick(manaAmount)
 	}
 
+	// Compute new frame things
+	modeSetting, valid := bridge.GetSetting(bridge.SettingMode)
+	if !valid {
+		panic("mode setting not found")
+	}
+	switch modeSetting {
+	case 1: // Bouncers
+	case 2: // Party
+		computePartyPixels()
+	}
+
 	// Send a new frame to all users
 	frame, blue, red := bridge.ConstructFrame(move)
 	bridge.SendGlobalAction(bridge.GameFrameAction(frame))
@@ -176,5 +187,30 @@ func paintersIngameTick() {
 		if currentState.RedHealth <= 0 {
 			StartEndState(bridge.TeamBlue)
 		}
+	}
+}
+
+// Compute pixels for party mode
+var partyTicks uint = 0
+
+func computePartyPixels() {
+	if partyTicks += 1; partyTicks > 10 {
+		partyTicks = 0
+		pos := randomPixelLocation()
+		direction := -1
+		if rand.Int()%2 == 0 {
+			direction = 1
+		}
+
+		bridge.DrawPixel("p", direction, pos)
+	}
+}
+
+// randomPixelLocation generates a random pixel location within the specified width and height.
+func randomPixelLocation() bridge.PixelPosition {
+	size := uint(bridge.DrawingAreaRedStart - bridge.DrawingAreaBlueEnd)
+	return bridge.PixelPosition{
+		X: uint(rand.Uint32())%(size/2) + bridge.DrawingAreaBlueEnd + size/2,
+		Y: uint(rand.Uint32())%16 + 1,
 	}
 }
