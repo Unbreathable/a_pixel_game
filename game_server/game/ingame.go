@@ -39,14 +39,22 @@ func StartPaintersIngameState() {
 
 	log.Println("hello world")
 	if manaSpeed == 4 /* (Unlimited) */ {
+		log.Println("hello world 2")
 		bridge.SetTeamManaMultiplier(bridge.TeamBlue, 0)
 		bridge.SetTeamManaMultiplier(bridge.TeamRed, 0)
 	} else if blueSize > redSize && redSize != 0 {
 		multiplier := float64(blueSize) / float64(redSize)
+		log.Println("multi-red", multiplier)
+		bridge.SetTeamManaMultiplier(bridge.TeamRed, 1)
 		bridge.SetTeamManaMultiplier(bridge.TeamBlue, multiplier)
 	} else if redSize > blueSize && blueSize != 0 {
 		multiplier := float64(redSize) / float64(blueSize)
+		log.Println("multi-red", multiplier)
+		bridge.SetTeamManaMultiplier(bridge.TeamBlue, 1)
 		bridge.SetTeamManaMultiplier(bridge.TeamRed, multiplier)
+	} else {
+		bridge.SetTeamManaMultiplier(bridge.TeamBlue, 1)
+		bridge.SetTeamManaMultiplier(bridge.TeamRed, 1)
 	}
 
 	NewGameState(GameStateIngame, IngameStateData{
@@ -165,7 +173,6 @@ func paintersIngameTick() {
 		panic("mode setting not found")
 	}
 	switch modeSetting {
-	case 1: // Bouncers
 	case 2: // Party
 		computePartyPixels()
 	}

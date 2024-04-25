@@ -59,12 +59,13 @@ var playersMap sync.Map = sync.Map{} // Player ID -> Player
 // Register a new player
 func NewPlayer(conn *websocket.Conn, state uint, data interface{}) *Player {
 	player := &Player{
-		Id:         util.RandomString(8),
-		Username:   "user #" + util.RandomString(5),
-		Mutex:      &sync.Mutex{},
-		ConnMutex:  &sync.Mutex{},
-		Connection: conn,
-		Team:       TeamNone,
+		Id:             util.RandomString(8),
+		Username:       "user #" + util.RandomString(5),
+		Mutex:          &sync.Mutex{},
+		ConnMutex:      &sync.Mutex{},
+		Connection:     conn,
+		Team:           TeamNone,
+		ManaMultiplier: 1,
 	}
 	playersMap.Store(player.Id, player)
 	JoinTeam(player.Id, TeamSpectator) // Add to spectator team

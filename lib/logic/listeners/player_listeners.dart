@@ -28,6 +28,6 @@ void initializePlayerListeners() {
   });
 
   defaultConnector.listen("mana_update", (action) {
-    DataStorage.currentMana.value = action.data["mana"];
+    DataStorage.currentMana.value = (action.data["mana"] as num).toDouble();
   });
 }
