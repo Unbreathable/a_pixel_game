@@ -6,6 +6,7 @@ import (
 
 	"github.com/Unbreathable/a-pixel-game/gameserver/bridge"
 	"github.com/Unbreathable/a-pixel-game/gameserver/game"
+	"github.com/Unbreathable/a-pixel-game/gameserver/util"
 )
 
 // Config
@@ -108,15 +109,21 @@ func startLine(ctx *Context) error {
 	}
 
 	// Grab variables
-	x := uint(ctx.Data["x"].(float64))
-	y := uint(ctx.Data["y"].(float64))
+	x, err := util.ParseUIntFromMap(ctx.Data, "x")
+	if err != nil {
+		return errors.New("couldn't parse x")
+	}
+	y, err := util.ParseUIntFromMap(ctx.Data, "y")
+	if err != nil {
+		return errors.New("couldn't parse y")
+	}
 
 	// Lock the player mutex
 	ctx.Player.Mutex.Lock()
 	defer ctx.Player.Mutex.Unlock()
 
 	// Check if there is enough mana
-	if bridge.GetMana(ctx.Player) <= 2 {
+	if bridge.GetMana(ctx.Player) <= 1 {
 		bridge.EndLine(ctx.Player)
 		return errors.New("not enough mana")
 	}
@@ -132,13 +139,13 @@ func startLine(ctx *Context) error {
 	if ctx.Player.Team == bridge.TeamBlue {
 		direction = 1
 	}
-	result := bridge.StartLine(ctx.Player, direction, bridge.PixelPosition{
+	err = bridge.StartLine(ctx.Player, direction, bridge.PixelPosition{
 		X: x,
 		Y: y,
 	})
-	if !result {
+	if err != nil {
 		bridge.EndLine(ctx.Player)
-		return errors.New("couldn't create line")
+		return errors.New("couldn't create line: " + err.Error())
 	}
 
 	return nil
@@ -151,8 +158,14 @@ func addToLine(ctx *Context) error {
 	}
 
 	// Grab variables
-	x := uint(ctx.Data["x"].(float64))
-	y := uint(ctx.Data["y"].(float64))
+	x, err := util.ParseUIntFromMap(ctx.Data, "x")
+	if err != nil {
+		return errors.New("couldn't parse x")
+	}
+	y, err := util.ParseUIntFromMap(ctx.Data, "y")
+	if err != nil {
+		return errors.New("couldn't parse y")
+	}
 
 	if bridge.GetMana(ctx.Player) <= 1 {
 		bridge.EndLine(ctx.Player)
@@ -170,9 +183,9 @@ func addToLine(ctx *Context) error {
 	}
 
 	// Add position to line
-	if !bridge.AddPointToLine(ctx.Player, bridge.PixelPosition{X: x, Y: y}) {
+	if err := bridge.AddPointToLine(ctx.Player, bridge.PixelPosition{X: x, Y: y}); err != nil {
 		bridge.EndLine(ctx.Player)
-		return errors.New("couldn't add position to line")
+		return errors.New("couldn't add position: " + err.Error())
 	}
 	return nil
 }

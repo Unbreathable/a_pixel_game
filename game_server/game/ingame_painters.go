@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log"
 	"time"
 
 	"github.com/Unbreathable/a-pixel-game/gameserver/bridge"
@@ -22,11 +23,6 @@ func StartPaintersIngameState() {
 	paintersTicks = 0
 	bridge.ClearCanvas()
 	bridge.ResetMana()
-	NewGameState(GameStateIngame, IngameStateData{
-		Start:      time.Now().UnixMilli(),
-		BlueHealth: startHealth,
-		RedHealth:  startHealth,
-	}, paintersIngameTick)
 
 	// Get the current mana speed
 	manaSpeed, ok := bridge.GetSetting(bridge.SettingManaRegen)
@@ -35,18 +31,29 @@ func StartPaintersIngameState() {
 	}
 
 	// Set the mana multipliers
+	log.Println("getting sizes")
 	blueSize := bridge.GetTeamSize(bridge.TeamBlue)
+	log.Println("red")
 	redSize := bridge.GetTeamSize(bridge.TeamRed)
+
+	log.Println("hello world")
 	if manaSpeed == 4 /* (Unlimited) */ {
 		bridge.SetTeamManaMultiplier(bridge.TeamBlue, 0)
 		bridge.SetTeamManaMultiplier(bridge.TeamRed, 0)
-	} else if blueSize > redSize {
+	} else if blueSize > redSize && redSize != 0 {
 		multiplier := float64(blueSize) / float64(redSize)
 		bridge.SetTeamManaMultiplier(bridge.TeamBlue, multiplier)
-	} else if redSize > blueSize {
+	} else if redSize > blueSize && blueSize != 0 {
 		multiplier := float64(redSize) / float64(blueSize)
 		bridge.SetTeamManaMultiplier(bridge.TeamRed, multiplier)
 	}
+
+	NewGameState(GameStateIngame, IngameStateData{
+		Start:      time.Now().UnixMilli(),
+		BlueHealth: startHealth,
+		RedHealth:  startHealth,
+	}, paintersIngameTick)
+
 }
 
 var paintersCurrentMoveSpeed = maxMoveSpeed
@@ -54,19 +61,21 @@ var paintersTickCounter = 0
 var paintersTicks = 0
 
 func paintersIngameTick() {
+	log.Println("tick")
 	blueTeam, _ := bridge.GetTeam(bridge.TeamBlue)
 	redTeam, _ := bridge.GetTeam(bridge.TeamRed)
 	spectatorTeam, _ := bridge.GetTeam(bridge.TeamSpectator)
 	currentState := GetCurrentStateData().(IngameStateData)
 
 	// Lock all the mutexes
-	blueTeam.Mutex.Lock()
-	redTeam.Mutex.Lock()
-	spectatorTeam.Mutex.Lock()
+	action := "ingame state"
+	blueTeam.LockMutex(action)
+	redTeam.LockMutex(action)
+	spectatorTeam.LockMutex(action)
 	defer func() {
-		blueTeam.Mutex.Unlock()
-		redTeam.Mutex.Unlock()
-		spectatorTeam.Mutex.Unlock()
+		blueTeam.UnlockMutex(action)
+		redTeam.UnlockMutex(action)
+		spectatorTeam.UnlockMutex(action)
 	}()
 
 	// Check if the teams are empty (and go to end state, cause no players anymore)

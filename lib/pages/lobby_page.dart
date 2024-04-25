@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:a_pixel_game/logic/game/game_controller.dart';
 import 'package:a_pixel_game/logic/game/lobby_state.dart';
 import 'package:a_pixel_game/logic/setting_manager.dart';
@@ -38,37 +40,71 @@ class _LobbyPageState extends State<LobbyPage> {
                 tag: "lobby",
                 color: Get.theme.colorScheme.onBackground,
                 borderRadius: BorderRadius.circular(sectionSpacing),
-                width: 800,
+                width: 750,
                 child: Padding(
                   padding: const EdgeInsets.all(sectionSpacing),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      Obx(() {
+                        final mode = SettingManager.gameModes[SettingManager.settingMap[SettingManager.gameMode]!.value.value];
+                        final speedMode = SettingManager.gameSpeeds[SettingManager.settingMap[SettingManager.gameSpeed]!.value.value];
+                        final manaMode = SettingManager.manaRegenMode[SettingManager.settingMap[SettingManager.manaRegenSpeed]!.value.value];
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              mode.icon,
+                              color: Get.theme.colorScheme.onPrimary,
+                              size: 35,
+                            ),
+                            horizontalSpacing(sectionSpacing),
+                            Text(mode.label, style: Get.theme.textTheme.headlineMedium),
+                            horizontalSpacing(sectionSpacing),
+                            Tooltip(
+                              message: "Game speed: ${speedMode.label}",
+                              child: Icon(
+                                speedMode.icon,
+                                color: Get.theme.colorScheme.onPrimary,
+                                size: 35,
+                              ),
+                            ),
+                            horizontalSpacing(sectionSpacing),
+                            Tooltip(
+                              message: "Mana regeneration: ${manaMode.label}",
+                              child: Icon(
+                                manaMode.icon,
+                                color: Get.theme.colorScheme.onPrimary,
+                                size: 35,
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                      verticalSpacing(sectionSpacing),
                       Obx(() {
                         final manager = Get.find<TeamManager>();
                         final spectators = manager.teams[TeamType.spectator]?.length ?? 0;
                         final players = (manager.teams[TeamType.blue]?.length ?? 0) + (manager.teams[TeamType.red]?.length ?? 0);
 
                         if (GameController.currentGameState.value != GameStateType.lobby) {
-                          return Text("Waiting for server..", style: Get.theme.textTheme.headlineMedium);
+                          return Text("Waiting for server..", style: Get.theme.textTheme.labelLarge);
                         }
                         final lobbyState = GameController.currentState as LobbyState;
                         if (lobbyState.countdown.value) {
                           return Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text("$players players, starting in ", style: Get.theme.textTheme.headlineMedium),
-                              DurationRenderer(lobbyState.countdownEnd.value, style: Get.theme.textTheme.headlineMedium),
-                              Text(".. ($spectators watching)", style: Get.theme.textTheme.headlineMedium),
+                              Text("$players/8 players, starting in ", style: Get.theme.textTheme.labelLarge),
+                              DurationRenderer(lobbyState.countdownEnd.value, style: Get.theme.textTheme.labelLarge),
+                              Text(".. ($spectators watching)", style: Get.theme.textTheme.labelLarge),
                             ],
                           );
                         }
 
-                        if (players >= 2) {
-                          return Text("$players players, $spectators spectating..", style: Get.theme.textTheme.headlineMedium);
-                        }
-
-                        return Text("$players/2 players, $spectators spectating..", style: Get.theme.textTheme.headlineMedium);
+                        return Text("$players/8 players, $spectators spectating..", style: Get.theme.textTheme.labelLarge);
                       }),
                       verticalSpacing(sectionSpacing),
                       Row(
@@ -76,7 +112,7 @@ class _LobbyPageState extends State<LobbyPage> {
                         children: [
                           Expanded(
                             child: SizedBox(
-                              height: 400,
+                              height: 300,
                               child: Material(
                                 color: Get.theme.colorScheme.primary,
                                 borderRadius: BorderRadius.circular(sectionSpacing),
@@ -130,7 +166,7 @@ class _LobbyPageState extends State<LobbyPage> {
                           horizontalSpacing(sectionSpacing),
                           Expanded(
                             child: SizedBox(
-                              height: 400,
+                              height: 300,
                               child: Material(
                                 color: Get.theme.colorScheme.errorContainer,
                                 borderRadius: BorderRadius.circular(sectionSpacing),
@@ -281,30 +317,6 @@ class SettingsWindow extends StatefulWidget {
 class _SettingsWindowState extends State<SettingsWindow> {
   final _nameController = TextEditingController();
 
-  // Game mode setting
-  final gameModes = <SelectableItem>[
-    const SelectableItem("Painters", Icons.brush),
-    const SelectableItem("Bouncers", Icons.sports_soccer),
-    const SelectableItem("Party", Icons.celebration),
-  ];
-
-  // Game speed setting
-  final gameSpeeds = <SelectableItem>[
-    const SelectableItem("Slow af", Icons.fast_rewind),
-    const SelectableItem("Vanilla", Icons.play_arrow),
-    const SelectableItem("Fast", Icons.fast_forward),
-    const SelectableItem("Overdrive", Icons.electric_bolt),
-  ];
-
-  // Mana setting
-  final manaRegenMode = <SelectableItem>[
-    const SelectableItem("Slow af", Icons.fast_rewind),
-    const SelectableItem("Vanilla", Icons.play_arrow),
-    const SelectableItem("Fast", Icons.fast_forward),
-    const SelectableItem("Overdrive", Icons.electric_bolt),
-    const SelectableItem("Unlimited", Icons.all_inclusive),
-  ];
-
   @override
   void initState() {
     _nameController.text = GameController.ownName.value;
@@ -348,9 +360,9 @@ class _SettingsWindowState extends State<SettingsWindow> {
             verticalSpacing(defaultSpacing),
             ListSelection(
               selected: SettingManager.settingMap[SettingManager.gameMode]!.value as Rx<int>,
-              items: gameModes,
+              items: SettingManager.gameModes,
               callback: (item) {
-                SettingManager.updateValue(SettingManager.gameMode, gameModes.indexOf(item));
+                SettingManager.updateValue(SettingManager.gameMode, SettingManager.gameModes.indexOf(item));
               },
             ),
             verticalSpacing(sectionSpacing),
@@ -360,9 +372,9 @@ class _SettingsWindowState extends State<SettingsWindow> {
             verticalSpacing(defaultSpacing),
             ListSelection(
               selected: SettingManager.settingMap[SettingManager.gameSpeed]!.value as Rx<int>,
-              items: gameSpeeds,
+              items: SettingManager.gameSpeeds,
               callback: (item) {
-                SettingManager.updateValue(SettingManager.gameSpeed, gameSpeeds.indexOf(item));
+                SettingManager.updateValue(SettingManager.gameSpeed, SettingManager.gameSpeeds.indexOf(item));
               },
             ),
             verticalSpacing(sectionSpacing),
@@ -372,9 +384,9 @@ class _SettingsWindowState extends State<SettingsWindow> {
             verticalSpacing(defaultSpacing),
             ListSelection(
               selected: SettingManager.settingMap[SettingManager.manaRegenSpeed]!.value as Rx<int>,
-              items: manaRegenMode,
+              items: SettingManager.manaRegenMode,
               callback: (item) {
-                SettingManager.updateValue(SettingManager.manaRegenSpeed, manaRegenMode.indexOf(item));
+                SettingManager.updateValue(SettingManager.manaRegenSpeed, SettingManager.manaRegenMode.indexOf(item));
               },
             ),
             verticalSpacing(sectionSpacing),

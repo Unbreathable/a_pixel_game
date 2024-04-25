@@ -32,17 +32,18 @@ func lobbyTick() {
 	currentState := GetCurrentStateData().(LobbyStateData)
 
 	// Lock all the mutexes
-	blueTeam.Mutex.Lock()
-	redTeam.Mutex.Lock()
-	spectatorTeam.Mutex.Lock()
+	action := "lobby state"
+	blueTeam.LockMutex(action)
+	redTeam.LockMutex(action)
+	spectatorTeam.LockMutex(action)
 	defer func() {
-		blueTeam.Mutex.Unlock()
-		redTeam.Mutex.Unlock()
-		spectatorTeam.Mutex.Unlock()
+		blueTeam.UnlockMutex(action)
+		redTeam.UnlockMutex(action)
+		spectatorTeam.UnlockMutex(action)
 	}()
 
 	// Check if the teams are empty
-	if len(blueTeam.Players) == 0 && len(redTeam.Players) == 0 {
+	if len(blueTeam.Players) == 0 || len(redTeam.Players) == 0 {
 
 		// Stop the countdown
 		if currentState.Countdown {
@@ -70,10 +71,7 @@ func lobbyTick() {
 			panic("game speed setting not found")
 		}
 
-		// Set the minimum amount based on the mode
-		switch modeSetting {
-		case 0: // Painters
-			StartPaintersIngameState()
-		}
+		log.Println(modeSetting)
+		go StartPaintersIngameState()
 	}
 }

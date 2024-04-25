@@ -1,5 +1,7 @@
 import 'package:a_pixel_game/logic/connector.dart';
+import 'package:a_pixel_game/theme/list_selection.dart';
 import 'package:a_pixel_game/vertical_spacing.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class SettingManager {
@@ -7,6 +9,30 @@ class SettingManager {
   static const gameMode = "mode";
   static const gameSpeed = "mode.speed";
   static const manaRegenSpeed = "mana.speed";
+
+  // Game mode setting
+  static final gameModes = <SelectableItem>[
+    const SelectableItem("Painters", Icons.brush),
+    const SelectableItem("Bouncers", Icons.sports_soccer),
+    const SelectableItem("Party", Icons.celebration),
+  ];
+
+  // Game speed setting
+  static final gameSpeeds = <SelectableItem>[
+    const SelectableItem("Slow af", Icons.fast_rewind),
+    const SelectableItem("Vanilla", Icons.play_arrow),
+    const SelectableItem("Fast", Icons.fast_forward),
+    const SelectableItem("Overdrive", Icons.electric_bolt),
+  ];
+
+  // Mana setting
+  static final manaRegenMode = <SelectableItem>[
+    const SelectableItem("Slow af", Icons.fast_rewind),
+    const SelectableItem("Vanilla", Icons.play_arrow),
+    const SelectableItem("Fast", Icons.fast_forward),
+    const SelectableItem("Overdrive", Icons.electric_bolt),
+    const SelectableItem("Unlimited", Icons.all_inclusive),
+  ];
 
   static Map<String, Setting> settingMap = <String, Setting>{};
 

@@ -5,7 +5,7 @@ import (
 )
 
 // Config
-const maxMana = 20
+const maxMana float64 = 20
 
 // Player ID -> Amount of mana (float64)
 var manaMap sync.Map = sync.Map{}
@@ -27,14 +27,14 @@ func ManaTick(manaAmount float64) {
 }
 
 // Get the current mana of a player
-func GetMana(player *Player) int {
+func GetMana(player *Player) float64 {
 	obj, ok := manaMap.Load(player.Id)
-	currentMana := 0
+	currentMana := float64(0)
 	if !ok {
 		manaMap.Store(player.Id, maxMana)
 		currentMana = maxMana
 	} else {
-		currentMana = obj.(int)
+		currentMana = obj.(float64)
 	}
 	return currentMana
 }

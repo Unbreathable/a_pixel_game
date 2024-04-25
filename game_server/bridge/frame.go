@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"errors"
 	"slices"
 	"sync"
 
@@ -212,13 +213,13 @@ func canPixelBePlaced(position PixelPosition) bool {
 //* Line drawing
 
 // Start drawing a new line (also performs checks)
-func StartLine(player *Player, direction int, position PixelPosition) bool {
+func StartLine(player *Player, direction int, position PixelPosition) error {
 	linesMutex.Lock()
 	defer linesMutex.Unlock()
 
 	// Check if the position is valid
 	if !canPixelBePlaced(position) {
-		return false
+		return errors.New("pixel can't be placed")
 	}
 
 	// Consume the mana
@@ -234,17 +235,17 @@ func StartLine(player *Player, direction int, position PixelPosition) bool {
 	}
 	lines = append(lines, line)
 
-	return true
+	return nil
 }
 
 // Add a point to a line (also performs checks on the position)
-func AddPointToLine(player *Player, position PixelPosition) bool {
+func AddPointToLine(player *Player, position PixelPosition) error {
 	linesMutex.Lock()
 	defer linesMutex.Unlock()
 
 	// Check if the position is valid
 	if !canPixelBePlaced(position) {
-		return false
+		return errors.New("pixel can't be placed")
 	}
 
 	// Get the index of the line in the lines slice
@@ -252,7 +253,7 @@ func AddPointToLine(player *Player, position PixelPosition) bool {
 		return line.Id == player.Id && !line.Finished
 	})
 	if lineIndex == -1 {
-		return false
+		return errors.New("line doesn't exist")
 	}
 
 	// Consume the mana
@@ -262,7 +263,7 @@ func AddPointToLine(player *Player, position PixelPosition) bool {
 	line := lines[lineIndex]
 	line.Points = append(line.Points, &position)
 
-	return true
+	return nil
 }
 
 // Finish drawing a line (also performs checks (only exists check))

@@ -9,10 +9,28 @@ import (
 	"github.com/gofiber/contrib/websocket"
 )
 
+// Config
+const teamMutexLogging = false
+
 type Team struct {
-	Mutex   *sync.Mutex
+	mutex   *sync.Mutex
 	Id      uint
 	Players []*Player
+}
+
+func (t *Team) LockMutex(context string) {
+	t.mutex.Lock()
+	if teamMutexLogging {
+		log.Println(t.Id, "lock context:", context)
+	}
+}
+
+func (t *Team) UnlockMutex(context string) {
+	if teamMutexLogging {
+		log.Println(t.Id, "unlocked context:", context)
+
+	}
+	t.mutex.Unlock()
 }
 
 type Player struct {
@@ -61,8 +79,9 @@ func NewPlayer(conn *websocket.Conn, state uint, data interface{}) *Player {
 	teamsMap.Range(func(key, value any) bool {
 		t := value.(*Team)
 
-		t.Mutex.Lock()
-		defer t.Mutex.Unlock()
+		action := "send current state"
+		t.LockMutex(action)
+		defer t.UnlockMutex(action)
 
 		for _, p := range t.Players {
 			if p.Id == player.Id {
@@ -146,8 +165,9 @@ func GetTeamSize(teamId uint) int {
 		return 0
 	}
 
-	team.Mutex.Lock()
-	defer team.Mutex.Unlock()
+	action := "get current team size"
+	team.LockMutex(action)
+	defer team.UnlockMutex(action)
 
 	return len(team.Players)
 }
@@ -157,8 +177,9 @@ func SetTeamManaMultiplier(id uint, multiplier float64) {
 	teamsMap.Range(func(key, value any) bool {
 		t := value.(*Team)
 
-		t.Mutex.Lock()
-		defer t.Mutex.Unlock()
+		action := "set mana multiplier"
+		t.LockMutex(action)
+		defer t.UnlockMutex(action)
 
 		for _, player := range t.Players {
 			player.Mutex.Lock()
@@ -182,17 +203,17 @@ func GetTeam(id uint) (*Team, bool) {
 func initTeam() {
 	teamsMap.Store(TeamSpectator, &Team{
 		Id:      TeamSpectator,
-		Mutex:   &sync.Mutex{},
+		mutex:   &sync.Mutex{},
 		Players: []*Player{},
 	})
 	teamsMap.Store(TeamBlue, &Team{
 		Id:      TeamBlue,
-		Mutex:   &sync.Mutex{},
+		mutex:   &sync.Mutex{},
 		Players: []*Player{},
 	})
 	teamsMap.Store(TeamRed, &Team{
 		Id:      TeamRed,
-		Mutex:   &sync.Mutex{},
+		mutex:   &sync.Mutex{},
 		Players: []*Player{},
 	})
 }
@@ -208,8 +229,9 @@ func JoinTeam(id string, teamId uint) bool {
 	team := obj.(*Team)
 
 	// Lock the mutex and unlock after returning
-	team.Mutex.Lock()
-	defer team.Mutex.Unlock()
+	action := "join team"
+	team.LockMutex(action)
+	defer team.UnlockMutex(action)
 
 	// Load the player and add to team
 	player, ok := GetPlayer(id)
@@ -246,11 +268,10 @@ func DeletePlayerTeam(id string, teamId uint) bool {
 	team := obj.(*Team)
 
 	// Lock the mutex and unlock after returning
-	team.Mutex.Lock()
-	defer func() {
-		log.Println("team mutex unlocked")
-		team.Mutex.Unlock()
-	}()
+
+	action := "delete player team"
+	team.LockMutex(action)
+	defer team.UnlockMutex(action)
 
 	log.Println("team mutex")
 
