@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:a_pixel_game/logic/game/game_controller.dart';
 import 'package:a_pixel_game/logic/game/lobby_state.dart';
 import 'package:a_pixel_game/logic/setting_manager.dart';
