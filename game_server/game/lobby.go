@@ -8,7 +8,7 @@ import (
 )
 
 // Config
-const lobbyCountdown = 1
+const lobbyCountdown = 10
 
 type LobbyStateData struct {
 	Countdown    bool  `json:"started"`

@@ -201,7 +201,7 @@ func paintersIngameTick() {
 var partyTicks uint = 0
 
 func computePartyPixels() {
-	if partyTicks += 1; partyTicks > 10 {
+	if partyTicks += 1; partyTicks > 30 {
 		partyTicks = 0
 		pos := randomPixelLocation()
 		direction := -1
