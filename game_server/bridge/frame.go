@@ -277,7 +277,7 @@ func StartLine(player *Player, direction int, position PixelPosition) error {
 	}
 
 	// Consume the mana
-	AddMana(player, -1)
+	AddMana(player, -5)
 
 	// Start a new line
 	line := &Line{

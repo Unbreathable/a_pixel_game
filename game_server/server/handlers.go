@@ -117,7 +117,7 @@ func startLine(ctx *Context) error {
 	defer ctx.Player.Mutex.Unlock()
 
 	// Check if there is enough mana
-	if bridge.GetMana(ctx.Player) <= 1 {
+	if bridge.GetMana(ctx.Player) <= 5 {
 		bridge.EndLine(ctx.Player)
 		return errors.New("not enough mana")
 	}
