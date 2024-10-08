@@ -11,6 +11,7 @@ import 'package:a_pixel_game/theme/window_base.dart';
 import 'package:a_pixel_game/vertical_spacing.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:fullscreen_window/fullscreen_window.dart';
 import 'package:get/get.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -227,6 +228,15 @@ class _LobbyPageState extends State<LobbyPage> {
                               padding: const EdgeInsets.all(elementSpacing),
                               child: Center(
                                 child: Text("Settings", style: Get.theme.textTheme.labelLarge),
+                              ),
+                            ),
+                          ),
+                          LPElevatedButton(
+                            onTap: () => FullScreenWindow.setFullScreen(true),
+                            child: Padding(
+                              padding: const EdgeInsets.all(elementSpacing),
+                              child: Center(
+                                child: Text("Fullscreen", style: Get.theme.textTheme.labelLarge),
                               ),
                             ),
                           ),

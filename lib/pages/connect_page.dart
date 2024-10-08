@@ -7,6 +7,7 @@ import 'package:a_pixel_game/theme/transition_container.dart';
 import 'package:a_pixel_game/vertical_spacing.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fullscreen_window/fullscreen_window.dart';
 import 'package:get/get.dart';
 
 class ConnectPage extends StatefulWidget {

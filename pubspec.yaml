@@ -40,6 +40,7 @@ dependencies:
   web_socket_channel: ^2.4.5
   pretty_qr_code: ^3.3.0
   url_launcher: ^6.2.6
+  fullscreen_window: ^1.0.4
 
 dev_dependencies:
   flutter_test:
